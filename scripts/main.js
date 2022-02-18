@@ -170,6 +170,10 @@ function getQuestions() {
     mode: "cors",
   };
 
+  var updateQTree = document.getElementById(`prize-${questionNum}`);
+  updateQTree.style.color = "goldenrod";
+  console.log(updateQTree);
+
   return fetch(url, controller)
     .then((response) =>
       response
@@ -386,6 +390,9 @@ nextBtn.addEventListener("click", function () {
   console.log(updateQTree);
   localStorage.setItem("qnumber", questionNum);
   window.location.reload();
+  var updateQTree = document.getElementById(`prize-${questionNum}`);
+  updateQTree.style.color = "goldenrod";
+  console.log(updateQTree);
 });
 
 var newGameBtn = document.getElementById("new-game");
@@ -395,9 +402,9 @@ newGameBtn.addEventListener("click", function () {
   window.location.reload();
 });
 
-windows.onload(() => {
+windows.onload = function () {
   questionNum = localStorage.getItem("qnumber");
   var updateQTree = document.getElementById(`prize-${questionNum}`);
   updateQTree.style.color = "goldenrod";
   console.log(updateQTree);
-});
+};
