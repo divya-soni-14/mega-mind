@@ -47,10 +47,6 @@ lifelineUsed = [0, 0, 0];
 let score = 0;
 
 //storing and loading values
-window.onload = function () {
-  console.log("Hello");
-  score = localStorage.getItem("score");
-};
 
 //timer
 function getTimeRemaining(timeInSeconds) {
@@ -68,7 +64,7 @@ function getTimeRemaining(timeInSeconds) {
     seconds,
   };
 }
-
+let pause = false;
 function initializeClock(id, endtime) {
   const clock = document.getElementById(id);
 
@@ -117,8 +113,10 @@ function initializeClock(id, endtime) {
   });
 
   const timeinterval = setInterval(() => {
+    if (!pause) {
+      endtime = endtime - 1;
+    }
     const t = getTimeRemaining(endtime * 1000);
-    endtime = endtime - 1;
     clock.innerHTML = t.minutes + " min : " + t.seconds + " sec";
     if (endtime <= 0 || timerIsActive === false) {
       clearInterval(timeinterval);
@@ -130,6 +128,13 @@ function initializeClock(id, endtime) {
     }
   }, 1000);
 }
+
+var pauseBtn = document.getElementById("pause-question-btn");
+
+pauseBtn.addEventListener("click", function () {
+  pause = !pause;
+  console.log(pause);
+});
 
 // //get questions
 
@@ -149,9 +154,14 @@ function initializeClock(id, endtime) {
 //   const data = await resolve(response.json());
 //   return data;
 // }
-
+let questionNum;
 function getQuestions() {
-  const url = "http://localhost:8000/api/questions/1/any";
+  questionNum = localStorage.getItem("qnumber");
+  let category = localStorage.getItem("category");
+  if (!category) category = "any";
+  const url = `http://localhost:8000/api/questions/${questionNum}/${category}`;
+  console.log("qno", questionNum);
+  console.log("cat", category);
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), 5000);
   const requestOptions = {
@@ -180,6 +190,7 @@ function addNewQuestion() {
   // if (startButton.disabled === false) {
 
   let questionData = Promise.resolve(getQuestions()).then((res) => {
+    localStorage.setItem("category", res.category);
     questionDataGlobal = res;
     console.log(res);
     question.innerHTML = res.ques;
@@ -190,7 +201,6 @@ function addNewQuestion() {
     for (let i = 0; i < 4; i++) {
       if (res.options[i].correct === true) {
         rightOption = i;
-        console.log(rightOption);
       }
     }
 
@@ -209,8 +219,14 @@ function addNewQuestion() {
         break;
     }
   });
+  let timer;
+  if (!questionNum) timer = 60;
+  else if (questionNum < 5) timer = 60;
+  else if (questionNum < 8) timer = 90;
+  else if (questionNum < 11) timer = 180;
+  else timer = 1000000;
 
-  initializeClock("start-timer", 20);
+  initializeClock("start-timer", timer);
   startButton.disabled = true;
   timerIsActive = true;
   question.classList.remove("blurred-div");
@@ -351,8 +367,6 @@ expertAdviceBtn.addEventListener("click", function () {
 
 // NEXT QUESTIONS
 function nextQuestion() {
-  localStorage.setItem("score", score);
-  localStorage.setItem("lifelines", lifelineUsed);
   console.log(score);
   console.log(lifelineUsed);
   location.reload();
@@ -365,5 +379,25 @@ function nextQuestion() {
 var nextBtn = document.getElementById("next-question-btn");
 
 nextBtn.addEventListener("click", function () {
+  questionNum = localStorage.getItem("qnumber");
+  questionNum++;
+  var updateQTree = document.getElementById(`prize-${questionNum}`);
+  updateQTree.style.color = "goldenrod";
+  console.log(updateQTree);
+  localStorage.setItem("qnumber", questionNum);
   window.location.reload();
+});
+
+var newGameBtn = document.getElementById("new-game");
+newGameBtn.addEventListener("click", function () {
+  localStorage.setItem("qnumber", "1");
+  questionNum = 1;
+  window.location.reload();
+});
+
+windows.onload(() => {
+  questionNum = localStorage.getItem("qnumber");
+  var updateQTree = document.getElementById(`prize-${questionNum}`);
+  updateQTree.style.color = "goldenrod";
+  console.log(updateQTree);
 });
