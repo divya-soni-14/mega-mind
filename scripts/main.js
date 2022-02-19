@@ -403,6 +403,9 @@ function ExpertAdvice() {
 }
 
 expertAdviceBtn.addEventListener("click", function () {
+  pause = !pause;
+  if (pause) pauseBtn.innerHTML = "RESUME";
+  else pauseBtn.innerHTML = "PAUSE";
   lifeLineUsed = JSON.parse(localStorage.getItem("lifelineUsed"));
   if (lifelineUsed[0] === 0) ExpertAdvice();
 });
