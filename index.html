@@ -15,7 +15,7 @@
 
     <link rel="stylesheet" href="css/main.css" />
 
-    <title>Hello, world!</title>
+    <title>CSEA KBC</title>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -37,7 +37,7 @@
         </ul>
         <ul class="navbar-nav navbar__tabgroup_right">
           <li class="nav-link nav__tabs">
-            <a class="lifeline-btn lifeline-active""> Flip the Question </a>
+            <a id='flipQuestionBtn' class="lifeline-btn lifeline-active""> Flip the Question </a>
           </li>
           <li class="nav-link nav__tabs">
             <a id="removeTwoLL" class="lifeline-btn lifeline-active" > 50:50 </a>
@@ -82,7 +82,7 @@
 
         <div class="col-lg-6 border-green main-screen" id="center-col">
           <div class="row text-center mx-4">
-            <div id="actionSelector" class="action-center">
+            <div id="actionSelector" class="action-center ">
               <button
                 disabled="true"
                 id="lock-question-btn"
@@ -106,7 +106,7 @@
               <div id="liveAlertPlaceholder">
                 <div class="alert alert-success" role="alert">
                   That was the right answer!
-                  <a id="next-q-link"><strong>Next Question</strong></a>
+                  
                 </div>
               </div>
             </div>
@@ -116,11 +116,10 @@
               id="wrong-answer-action-selector"
               class="action-center display-none"
             >
-              <div id="liveAlertPlaceholder1">
-                <div class="alert alert-success" role="alert">
+              <div id="liveAlertPlaceholder2">
+                <div class="alert alert-danger" role="alert">
                   <span id="wrong-answer-alert-text"></span>
-                  <br />
-                  You have won XXX amount!
+                  <strong><a id="check-right-answer">Check Right Answer</a></strong>
                 </div>
               </div>
             </div>

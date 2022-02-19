@@ -42,7 +42,11 @@ var remove1 = null;
 var remove2 = null;
 
 // index 0: expert advice, 1: flip the question, 2: 50:50
-lifelineUsed = [0, 0, 0];
+let lifelineUsed = [0, 0, 0];
+
+let l1;
+let l2;
+let l3;
 
 let score = 0;
 
@@ -72,6 +76,7 @@ function initializeClock(id, endtime) {
   questionIsActive = true;
   answerbtns.forEach((choice) => {
     choice.addEventListener("click", function () {
+      console.log(choice);
       if (locked == null) {
         //highlight selected option
         choice.classList.add("answer-selected");
@@ -133,6 +138,8 @@ var pauseBtn = document.getElementById("pause-question-btn");
 
 pauseBtn.addEventListener("click", function () {
   pause = !pause;
+  if (pause) pauseBtn.innerHTML = "RESUME";
+  else pauseBtn.innerHTML = "PAUSE";
   console.log(pause);
 });
 
@@ -158,6 +165,7 @@ let questionNum;
 function getQuestions() {
   questionNum = localStorage.getItem("qnumber");
   let category = localStorage.getItem("category");
+  lifeLineUsed = JSON.parse(localStorage.getItem("lifelineUsed"));
   if (!category) category = "any";
   const url = `http://localhost:8000/api/questions/${questionNum}/${category}`;
   console.log("qno", questionNum);
@@ -173,6 +181,16 @@ function getQuestions() {
   var updateQTree = document.getElementById(`prize-${questionNum}`);
   updateQTree.style.color = "goldenrod";
   console.log(updateQTree);
+
+  if (lifeLineUsed && lifeLineUsed[2] === 1) {
+    removeTwoBtn.classList.remove("lifeline-active");
+    removeTwoBtn.classList.add("lifeline-used");
+  }
+
+  if (lifeLineUsed && lifeLineUsed[0] === 1) {
+    expertAdviceBtn.classList.remove("lifeline-active");
+    expertAdviceBtn.classList.add("lifeline-used");
+  }
 
   return fetch(url, controller)
     .then((response) =>
@@ -205,23 +223,29 @@ function addNewQuestion() {
     for (let i = 0; i < 4; i++) {
       if (res.options[i].correct === true) {
         rightOption = i;
+        console.log("right option is " + rightOption);
       }
     }
 
     switch (rightOption) {
-      case "0":
+      case 0:
         rightOptionBtn = opBtn1;
+        console.log(rightOptionBtn);
         break;
-      case "1":
+      case 1:
         rightOptionBtn = opBtn2;
+        console.log(rightOptionBtn);
         break;
-      case "2":
+      case 2:
         rightOptionBtn = opBtn3;
+        console.log(rightOptionBtn);
         break;
-      case "3":
+      case 3:
         rightOptionBtn = opBtn4;
+        console.log(rightOptionBtn);
         break;
     }
+    console.log(rightOptionBtn);
   });
   let timer;
   if (!questionNum) timer = 60;
@@ -258,8 +282,6 @@ function checkLocked() {
     correctAnswer();
   } else {
     lockedBtn.classList.add("answer-wrong");
-    rightOptionBtn.classList.remove("answer-normal");
-    rightOptionBtn.classList.add("answer-correct");
     wrongAnswer();
   }
 }
@@ -303,36 +325,47 @@ function wrongAnswer() {
   var failCenter = document.getElementById("wrong-answer-action-selector");
 
   var failText = document.getElementById("wrong-answer-alert-text");
+  actionCenter.classList.add("display-none");
+  failCenter.classList.remove("display-none");
 
   failText.innerText = !locked
     ? "You're out of time! :("
     : "That was the wrong answer! :(";
   //this does what it says it does
-  actionCenter.classList.add("display-none");
-  failCenter.classList.remove("display-none");
 
   //ADD SAVING SCORE AND DATA TO SERVER
 }
+
+var checkRightBtn = document.getElementById("check-right-answer");
+
+checkRightBtn.addEventListener("click", function () {
+  rightOptionBtn.classList.remove("answer-normal");
+  rightOptionBtn.classList.add("answer-correct");
+});
 
 // LIFELINES
 
 //50-50
 var removeTwoBtn = document.getElementById("removeTwoLL");
 
+Array.prototype.random = function () {
+  return this[Math.floor(Math.random() * this.length)];
+};
+
 function removeTwo() {
   // 0 1 2 3
-  console.log(lifelineUsed);
-
   let wrongAns = [0, 1, 2, 3];
   wrongAns.splice(rightOption, 1);
 
-  let i1 = Math.floor(Math.random() * wrongAns.length);
+  // let i1 = Math.floor(Math.random() * 4);
+  let i1 = wrongAns.random();
   let removeOpt1 = wrongAns[i1];
-  wrongAns.splice(i1, 1);
+  wrongAns.splice(wrongAns.indexOf(i1), 1);
 
-  let i2 = Math.floor(Math.random() * wrongAns.length);
+  // let i2 = Math.floor(Math.random() * 4);
+  let i2 = wrongAns.random();
   let removeOpt2 = wrongAns[i2];
-  wrongAns.splice(i2, 1);
+  wrongAns.splice(wrongAns.indexOf(i2), 1);
 
   console.log(removeOpt1, removeOpt2);
   var remove1 = document.getElementById("opt-" + (i1 + 1));
@@ -347,26 +380,31 @@ function removeTwo() {
 
   removeTwoBtn.classList.remove("lifeline-active");
   removeTwoBtn.classList.add("lifeline-used");
-  removeTwoBtn.removeEventListener("click");
   lifelineUsed[2] = 1;
+  localStorage.setItem("l3", 1);
 }
 
 removeTwoBtn.addEventListener("click", function () {
-  if (timerIsActive && lifelineUsed[2] === 0) removeTwo();
+  lifeLineUsed = JSON.parse(localStorage.getItem("lifelineUsed"));
+  if (localStorage.getItem("l3") !== "1")
+    if (timerIsActive && lifelineUsed[2] === 0) removeTwo();
 });
 
 //EXPERT ADVICE
 var expertAdviceBtn = document.getElementById("expert-advice-btn");
 function ExpertAdvice() {
-  var rightAns = document.getElementById("opt-" + (rightOption + 1));
-  locked = rightAns;
-  locked.lifelineUsed[0] = 1;
+  console.log("EA");
+  lifeLineUsed = JSON.parse(localStorage.getItem("lifelineUsed"));
+  lifelineUsed[0] = 1;
+  localStorage.setItem("lifelineUsed", JSON.stringify(lifelineUsed));
+  localStorage.setItem("l1", 1);
   expertAdviceBtn.classList.remove("lifeline-active");
   expertAdviceBtn.classList.add("lifeline-used");
 }
 
 expertAdviceBtn.addEventListener("click", function () {
-  if (timerIsActive && lifelineUsed[0] === 0) ExpertAdvice();
+  lifeLineUsed = JSON.parse(localStorage.getItem("lifelineUsed"));
+  if (lifelineUsed[0] === 0) ExpertAdvice();
 });
 
 // NEXT QUESTIONS
@@ -378,33 +416,104 @@ function nextQuestion() {
   console.log(lifelineUsed);
 }
 
+//FLIP THE QUESTION
+var flipQ = document.getElementById("flipQuestionBtn");
+flipQ.addEventListener("click", function () {
+  if (localStorage.getItem("l2") === "1") return;
+  else {
+    console.log("FQ works");
+    localStorage.setItem("qnumber", questionNum);
+    window.location.reload();
+    localStorage.setItem("l2", 1);
+    flipQ.classList.add("lifeline-used");
+    flipQ.classList.remove("lifeline-active");
+  }
+});
+
 //next question
 
 var nextBtn = document.getElementById("next-question-btn");
 
 nextBtn.addEventListener("click", function () {
+  l1 = localStorage.getItem("l1");
+  l2 = localStorage.getItem("l2");
+  l3 = localStorage.getItem("l3");
   questionNum = localStorage.getItem("qnumber");
   questionNum++;
   var updateQTree = document.getElementById(`prize-${questionNum}`);
+  console.log(questionNum);
   updateQTree.style.color = "goldenrod";
   console.log(updateQTree);
   localStorage.setItem("qnumber", questionNum);
+  localStorage.setItem("lifelineUsed", JSON.stringify(lifelineUsed));
+  localStorage.setItem("l1", l1);
+  localStorage.setItem("l2", l2);
+  localStorage.setItem("l3", l3);
+  console.log(lifelineUsed);
+
   window.location.reload();
   var updateQTree = document.getElementById(`prize-${questionNum}`);
   updateQTree.style.color = "goldenrod";
   console.log(updateQTree);
+  lifeLineUsed = JSON.parse(localStorage.getItem("lifelineUsed"));
+
+  l1 = localStorage.getItem("l1");
+  l2 = localStorage.getItem("l2");
+  l3 = localStorage.getItem("l3");
+
+  console.log("LL used" + lifeLineUsed);
+  if (l1 === 1) {
+    expertAdviceBtn.classList.add("lifeline-used");
+    expertAdviceBtn.classList.remove("lifeline-active");
+  }
+
+  if (l3 === 1) {
+    removeTwo.classList.add("lifeline-used");
+    removeTwo.classList.remove("lifeline-active");
+  }
 });
 
 var newGameBtn = document.getElementById("new-game");
 newGameBtn.addEventListener("click", function () {
+  localStorage.removeItem("lifelineUsed");
   localStorage.setItem("qnumber", "1");
+
+  localStorage.setItem("lifelineUsed", JSON.stringify(lifelineUsed));
+  localStorage.setItem("l1", 0);
+  localStorage.setItem("l2", 0);
+  localStorage.setItem("l3", 0);
   questionNum = 1;
   window.location.reload();
 });
 
-windows.onload = function () {
+window.onload = function () {
+  lifeLineUsed = JSON.parse(localStorage.getItem("lifelineUsed"));
+  l1 = localStorage.getItem("l1");
+  l2 = localStorage.getItem("l2");
+  l3 = localStorage.getItem("l3");
+  console.log("lifelines");
+  console.log(l1);
+  console.log(l2);
+  console.log(l3);
+  if (l3 === "1") {
+    console.log("EA isnt updated");
+    removeTwoBtn.classList.remove("lifeline-active");
+    removeTwoBtn.classList.add("lifeline-used");
+  }
+
+  if (l1 === "1") {
+    console.log("l1 is used");
+    expertAdviceBtn.classList.remove("lifeline-active");
+    expertAdviceBtn.classList.add("lifeline-used");
+  }
+
+  if (l2 === "1") {
+    console.log("l1 is used");
+    flipQ.classList.remove("lifeline-active");
+    flipQ.classList.add("lifeline-used");
+  }
+
   questionNum = localStorage.getItem("qnumber");
   var updateQTree = document.getElementById(`prize-${questionNum}`);
   updateQTree.style.color = "goldenrod";
-  console.log(updateQTree);
 };
